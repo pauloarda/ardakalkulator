@@ -1,12 +1,10 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_simple_calculator/flutter_simple_calculator.dart';
+import 'dart:math'; // Import library untuk fungsi perpangkatan dan akar kuadrat.
 
-void main() => runApp(const MyApp());
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
+  MyApp({super.key});
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -14,74 +12,154 @@ class MyApp extends StatelessWidget {
         appBar: AppBar(
           title: const Text('ArdaKalkulator'),
         ),
-        body: const Padding(
-          padding: EdgeInsets.all(18.0),
-          child: SizedBox(
-            width: double.infinity,
-            child: CalcButton(),
-          ),
-        ),
+        body: MyCalculator(),
       ),
     );
   }
 }
 
-class CalcButton extends StatefulWidget {
-  const CalcButton({Key? key}) : super(key: key);
-
+class MyCalculator extends StatefulWidget {
+  MyCalculator({super.key});
   @override
-  CalcButtonState createState() => CalcButtonState();
+  _MyCalculatorState createState() => _MyCalculatorState();
 }
 
-class CalcButtonState extends State<CalcButton> {
-  double? _currentValue = 0;
-  @override
-  Widget build(BuildContext context) {
-    var calc = SimpleCalculator(
-      value: _currentValue!,
-      hideExpression: false,
-      hideSurroundingBorder: true,
-      autofocus: true,
-      onChanged: (key, value, expression) {
-        setState(() {
-          _currentValue = value ?? 0;
-        });
-        if (kDebugMode) {
-          print('$key\t$value\t$expression');
+class _MyCalculatorState extends State<MyCalculator> {
+  String _output = "";
+  String _currentInput = "";
+  double _num1 = 0;
+  double _num2 = 0;
+  String _operator = "";
+
+  void _buttonPressed(String buttonText) {
+    if (buttonText == "C") {
+      _output = "";
+      _currentInput = "";
+      _num1 = 0;
+      _num2 = 0;
+      _operator = "";
+    } else if (buttonText == "+" ||
+        buttonText == "-" ||
+        buttonText == "x" ||
+        buttonText == "/") {
+      if (_currentInput != "") {
+        _num1 = double.parse(_currentInput);
+        _operator = buttonText;
+        _currentInput = "";
+      }
+    } else if (buttonText == "=") {
+      if (_currentInput != "") {
+        _num2 = double.parse(_currentInput);
+        if (_operator == "+") {
+          _currentInput = (_num1 + _num2).toString();
+        } else if (_operator == "-") {
+          _currentInput = (_num1 - _num2).toString();
+        } else if (_operator == "x") {
+          _currentInput = (_num1 * _num2).toString();
+        } else if (_operator == "/") {
+          _currentInput = (_num1 / _num2).toString();
         }
-      },
-      onTappedDisplay: (value, details) {
-        if (kDebugMode) {
-          print('$value\t${details.globalPosition}');
-        }
-      },
-      theme: const CalculatorThemeData(
-        borderColor: Colors.black,
-        borderWidth: 2,
-        displayColor: Colors.black,
-        displayStyle: TextStyle(fontSize: 80, color: Colors.yellow),
-        expressionColor: Colors.indigo,
-        expressionStyle: TextStyle(fontSize: 20, color: Colors.white),
-        operatorColor: Colors.pink,
-        operatorStyle: TextStyle(fontSize: 30, color: Colors.white),
-        commandColor: Colors.orange,
-        commandStyle: TextStyle(fontSize: 30, color: Colors.white),
-        numColor: Colors.grey,
-        numStyle: TextStyle(fontSize: 50, color: Colors.white),
+        _num1 = 0;
+        _num2 = 0;
+        _operator = "";
+      }
+    } else if (buttonText == "x²") {
+      if (_currentInput != "") {
+        double num = double.parse(_currentInput);
+        _currentInput = (num * num).toString();
+      }
+    } else if (buttonText == "√") {
+      if (_currentInput != "") {
+        double num = double.parse(_currentInput);
+        _currentInput = sqrt(num).toString();
+      }
+    } else {
+      _currentInput += buttonText;
+    }
+
+    setState(() {
+      _output = _currentInput;
+    });
+  }
+
+  Widget _buildButton(String buttonText) {
+    return Expanded(
+      child: Padding(
+        padding: EdgeInsets.all(8.0),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.all(24.0),
+          ),
+          child: Text(
+            buttonText,
+            style: TextStyle(
+              fontSize: 24.0,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          onPressed: () => _buttonPressed(buttonText),
+        ),
       ),
     );
-    return OutlinedButton(
-      child: Text(_currentValue.toString()),
-      onPressed: () {
-        showModalBottomSheet(
-            isScrollControlled: true,
-            context: context,
-            builder: (BuildContext context) {
-              return SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.75,
-                  child: calc);
-            });
-      },
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          alignment: Alignment.centerRight,
+          padding: EdgeInsets.all(12.0),
+          child: Text(
+            _output,
+            style: TextStyle(
+              fontSize: 48.0,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Divider(),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildButton("7"),
+            _buildButton("8"),
+            _buildButton("9"),
+            _buildButton("/"),
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildButton("4"),
+            _buildButton("5"),
+            _buildButton("6"),
+            _buildButton("x"),
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildButton("1"),
+            _buildButton("2"),
+            _buildButton("3"),
+            _buildButton("-"),
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildButton("C"),
+            _buildButton("0"),
+            _buildButton("="),
+            _buildButton("+"),
+            _buildButton("x²"), //  perpangkatan
+            _buildButton("√"), //  akar kuadrat
+          ],
+        ),
+      ],
     );
   }
 }
